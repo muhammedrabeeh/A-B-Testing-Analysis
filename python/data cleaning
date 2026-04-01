@@ -1,1 +1,99 @@
+A/B Testing Analysis - Data Cleaning & Statistical Testing
 
+performs data cleaning, feature engineering, and statistical testing
+for A/B testing analysis (Control vs Test campaign).
+
+import pandas as pd
+
+1. Load Data
+
+control = pd.read_csv('data/control_group.csv')
+test = pd.read_csv('data/test_group.csv')
+
+ 2. Initial Cleaning
+=Fix column name issue if exists
+control.columns = control.columns.str.replace(']', '', regex=False)
+
+= Add group labels
+control['group'] = 'control'
+test['group'] = 'test'
+
+= Combine datasets
+df = pd.concat([control, test], ignore_index=True)
+
+= Standardize column names
+df.columns = [
+    'campaign_name',
+    'date',
+    'spend_usd',
+    'impressions',
+    'reach',
+    'website_clicks',
+    'searches',
+    'view_content',
+    'add_to_cart',
+    'purchases',
+    'group'
+]
+
+
+3. Data Cleaning
+
+= Convert date column
+df['date'] = pd.to_datetime(df['date'], errors='coerce')
+
+= Handle missing values
+df = df.dropna(subset=['website_clicks', 'purchases'])
+
+= Remove invalid rows (avoid division errors)
+df = df[(df['website_clicks'] > 0) & (df['purchases'] >= 0)]
+
+= 4. Feature Engineering
+
+df['ctr'] = df['website_clicks'] / df['impressions']
+df['conversion_rate'] = df['purchases'] / df['website_clicks']
+df['cpa'] = df['spend_usd'] / df['purchases']
+
+= Replace infinite values
+df.replace([float('inf'), -float('inf')], pd.NA, inplace=True)
+
+= 5. Aggregated Metrics
+
+summary = df.groupby('group').agg({
+    'spend_usd': 'sum',
+    'website_clicks': 'sum',
+    'purchases': 'sum'
+})
+
+summary['conversion_rate'] = summary['purchases'] / summary['website_clicks']
+summary['cpa'] = summary['spend_usd'] / summary['purchases']
+
+print("\n=== Summary Metrics ===")
+print(summary)
+
+
+ 6. Statistical Test (Z-test)
+
+control_clicks = summary.loc['control', 'website_clicks']
+control_purchases = summary.loc['control', 'purchases']
+
+test_clicks = summary.loc['test', 'website_clicks']
+test_purchases = summary.loc['test', 'purchases']
+
+success = [test_purchases, control_purchases]
+total = [test_clicks, control_clicks]
+
+z_stat, p_value = proportions_ztest(success, total)
+
+print("\n=== A/B Test Result ===")
+print(f"Z-statistic: {z_stat:.4f}")
+print(f"P-value: {p_value:.4f}")
+
+if p_value < 0.05:
+    print("Result: Statistically significant difference (reject H0)")
+else:
+    print("Result: No statistically significant difference (fail to reject H0)")
+
+ 7. Save Clean Data
+
+df.to_csv('data/ab_testing_cleaned.csv', index=False)
