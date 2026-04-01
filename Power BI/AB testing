@@ -1,1 +1,58 @@
+# Power BI Dashboard
+An interactive dashboard was built in Power BI to analyze and compare the performance of Control and Test campaigns.
+
+# Data Modeling
+- Combined datasets using Power Query (Append)
+- Created a unified table with a "Group" column (Control vs Test)
+- Cleaned and transformed data for analysis
+
+# DAX Measures Created
+
+The following DAX measures were created to evaluate A/B test performance
+Total Purchases = SUM(Append1[Purchase])
+
+Total Clicks = SUM(Append1[Website Clicks])
+
+Total Spend = SUM(Append1[Spend_USD])
+
+Conversion Rate (CR) = 
+DIVIDE([Total Purchases], [Total Clicks])
+
+Cost Per Acquisition (CPA) = 
+DIVIDE([Total Spend], [Total Purchases])
+
+# Visualizations
+
+The dashboard includes:
+
+- KPI Cards:
+  - Conversion Rate (CR)
+  - Cost Per Acquisition (CPA)
+  - Total Purchases
+  - Total Spend
+
+- Comparison Table:
+  - Side-by-side comparison of Control vs Test
+
+- Bar Charts:
+  - Purchases by Group
+  - CR by Group
+  - CPA by Group
+
+- Trend Analysis:
+  - Performance over time (Date vs Purchases/CR)
+
+- Slicers:
+  - Group filter
+  - Date filter
+
+# Key Insight
+
+The Control group outperforms the Test group with:
+- Higher conversion rate
+- Lower cost per acquisition
+Although the Test group generated more purchases, it required higher spend, making it less efficient.
+
+# Conclusion
+The dashboard clearly demonstrates that the Control campaign is more cost-effective and delivers better overall performance, making it the recommended strategy.
 
